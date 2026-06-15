@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id 'net.neoforged.moddev' version '2.0.141'
+    id 'com.gradleup.shadow' version '8.3.5'
 }
 
 version = mod_version
@@ -11,6 +12,10 @@ group = mod_group_id
 repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+        name = 'm2-dv8tion'
+        url = 'https://m2.dv8tion.net/releases'
+    }
 }
 
 base {
@@ -97,33 +102,25 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
-    implementation('club.minnced:discord-webhooks:0.8.4') {
+    // 1. Указываем JDA для компиляции мода и исключаем аудио-модули и JNA
+    compileOnly('net.dv8tion:JDA:5.2.2') {
         exclude group: 'org.slf4j'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'club.minnced', module: 'opus-java' // Исключаем Opus (аудио)
     }
 
-    implementation('net.dv8tion:JDA:5.3.0') {
-        exclude group: 'org.slf4j', module: 'slf4j-api'
+    // 2. Указываем плагину Shadow исключить аудио-модули
+    shadow('net.dv8tion:JDA:5.2.2') {
+        exclude group: 'org.slf4j'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'club.minnced', module: 'opus-java' // Исключаем Opus (аудио)
     }
-    // Example mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-forge-api:${jei_version}"
-    // runtimeOnly "mezz.jei:jei-${mc_version}-forge:${jei_version}"
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
-
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    // 3. Для локального тестирования в среде разработки
+    additionalRuntimeClasspath('net.dv8tion:JDA:5.2.2') {
+        exclude group: 'org.slf4j'
+        exclude group: 'club.minnced', module: 'opus-java'
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -173,3 +170,41 @@ idea {
         downloadJavadoc = true
     }
 }
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    // Перемещаем пакеты JDA и её сетевых зависимостей
+    relocate 'net.dv8tion.jda', 'org.hodytrapl.discord_linker.shadow.jda'
+    relocate 'okhttp3', 'org.hodytrapl.discord_linker.shadow.okhttp3'
+    relocate 'okio', 'org.hodytrapl.discord_linker.shadow.okio'
+
+    // Изолируем абсолютно ВСЕ зависимости от Google (GSON, ErrorProne, Guava и др.)
+    relocate 'com.google', 'org.hodytrapl.discord_linker.shadow.google'
+
+    // На всякий случай изолируем и другие утилиты, которые могут вылезти
+    relocate 'com.sun.jna', 'org.hodytrapl.discord_linker.shadow.jna'
+    relocate 'gnu.trove', 'org.hodytrapl.discord_linker.shadow.trove'
+    relocate 'com.neovisionaries', 'org.hodytrapl.discord_linker.shadow.neovisionaries'
+
+    // Жестко вырезаем дублирующиеся системные пакеты
+    exclude 'javax/annotation/**'
+    exclude 'com/sun/jna/**'
+
+    // Удаляем любые файлы описания модулей (module-info.class), они главная причина крашей JPMS в NeoForge
+    exclude 'module-info.class'
+    exclude 'META-INF/versions/**/module-info.class'
+
+    // Очистка метаданных сборщиков
+    exclude 'META-INF/maven/**'
+    exclude 'META-INF/org/**'
+    exclude 'META-INF/versions/**'
+
+    archiveClassifier.set('')
+}
+
+// Заставляем NeoForge использовать shadowJar вместо обычного jar при сборке
+tasks.named('jar', Jar) {
+    enabled = false
+}
+tasks.build.dependsOn(shadowJar)

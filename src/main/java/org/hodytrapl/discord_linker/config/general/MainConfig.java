@@ -2,6 +2,7 @@ package org.hodytrapl.discord_linker.config.general;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hodytrapl.discord_linker.config.events.EventsConfig;
 
 public class MainConfig {
     // --- Базовая настройка ---
@@ -20,6 +21,9 @@ public class MainConfig {
     public final ModConfigSpec.BooleanValue enableBot;
     public final ModConfigSpec.ConfigValue<String> botToken;
     public final ModConfigSpec.ConfigValue<String> channelID;
+    public final ModConfigSpec.ConfigValue<String> eventsID;
+    public final ModConfigSpec.ConfigValue<String> commandsID;
+
     public final ModConfigSpec.BooleanValue enablePresence;
     public final ModConfigSpec.ConfigValue<String> presenceMessage;
 
@@ -41,6 +45,12 @@ public class MainConfig {
         channelID = builder
                 .comment("-")
                 .define("channel_id", "0000000000000000000");
+        eventsID = builder
+                .comment("-")
+                .define("events_id", "0000000000000000000");
+        commandsID=builder
+                .comment("-")
+                .define("commands_id", "0000000000000000000");
         //вложенность в bot
             builder.comment("General settings").push("discord_presence");
             enablePresence = builder

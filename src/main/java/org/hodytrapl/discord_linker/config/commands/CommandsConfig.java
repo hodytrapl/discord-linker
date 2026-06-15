@@ -53,7 +53,7 @@ public class CommandsConfig {
                 "neoforge tps", "tps", false);
 
         modListCommand = new CommandsEntryConfig(builder, "modlist",
-                "discrodlinker mods", "mods", false);
+                "discordlinker mods", "mods", false);
 
         onlineListCommand = new CommandsEntryConfig(builder, "list",
                 "list", "list", false);
@@ -80,4 +80,7 @@ public class CommandsConfig {
 
     // Command entry getters
     public CommandsEntryConfig getTPSCommand() { return TPSCommand; }
+    public CommandsEntryConfig getModListCommand() { return modListCommand; }
+    public CommandsEntryConfig getOnlineListCommand() { return onlineListCommand; }
+
 }

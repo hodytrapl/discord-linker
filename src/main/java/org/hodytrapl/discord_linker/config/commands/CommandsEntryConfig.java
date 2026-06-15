@@ -31,4 +31,23 @@ public class CommandsEntryConfig {
 
         builder.pop();
     }
+
+    public String enabled() {
+        return String.valueOf(enabled.get());
+    }
+
+    // Getter for minecraftCommand as String
+    public String minecraftCommand() {
+        return minecraftCommand.get();
+    }
+
+    // Getter for discordCommand as String
+    public String discordCommand() {
+        return discordCommand.get();
+    }
+
+    // Getter for managementCommand as String
+    public String managementCommand() {
+        return String.valueOf(managementCommand.get());
+    }
 }
