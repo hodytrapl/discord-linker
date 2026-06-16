@@ -93,7 +93,7 @@ public class EventEntryConfig {
                 .defineListAllowEmpty("fields", Collections.emptyList(),
                         obj -> obj instanceof String && ((String) obj).split("\\|", 3).length == 3);
 
-        builder.pop(); // embed
-        builder.pop(); // player_join
+        builder.pop(); // завершаем ембед
+        builder.pop(); // завершаем событие
     }
 }

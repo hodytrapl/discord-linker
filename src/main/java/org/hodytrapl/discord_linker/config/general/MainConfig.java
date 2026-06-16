@@ -42,6 +42,7 @@ public class MainConfig {
         botToken = builder
                 .comment("-")
                 .define("bot_token", "BOT_TOKEN_HERE");
+
         channelID = builder
                 .comment("-")
                 .define("channel_id", "0000000000000000000");

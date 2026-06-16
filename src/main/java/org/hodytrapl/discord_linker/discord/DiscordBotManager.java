@@ -5,10 +5,12 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.hodytrapl.discord_linker.config.general.MainConfig;
 import org.hodytrapl.discord_linker.discord.commands.CommandListener;
 import org.hodytrapl.discord_linker.discord.enums.DiscordMessageType;
+import org.hodytrapl.discord_linker.utils.ValidationUtils;
 import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 
@@ -116,6 +118,78 @@ public class DiscordBotManager {
             String presenceMessage = MainConfigHelper.getPresenceMessage();
             jda.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing(presenceMessage));
             LOGGER.info("Discord presence set to: Playing {}", presenceMessage);
+        }
+    }
+
+    public void sendEmbed(String channelId, MessageEmbed embed) {
+        if (jda == null || !ValidationUtils.isValidId(channelId)) {
+            LOGGER.warn("Cannot send embed: bot not ready or invalid channel");
+            return;
+        }
+        var channel = jda.getTextChannelById(channelId);
+        if (channel == null) {
+            LOGGER.warn("Channel not found: {}", channelId);
+            return;
+        }
+        channel.sendMessageEmbeds(embed).queue(
+                null,
+                failure -> LOGGER.error("Failed to send embed", failure)
+        );
+    }
+
+    public void sendMessageSync(String channelId, String content, DiscordMessageType type) {
+        if (jda == null) {
+            LOGGER.warn("Cannot send Discord message – bot not initialized");
+            return;
+        }
+        if (!isValidId(channelId)) {
+            LOGGER.warn("Invalid channel ID: {}", channelId);
+            return;
+        }
+        if (content == null) content = "";
+        if (content.isEmpty()) return;
+
+        String formatted;
+        switch (type) {
+            case COMMAND_RESPONSE:
+                formatted = "```\n" + content + "\n```";
+                break;
+            case SYSTEM_NOTIFICATION:
+                formatted = "[System] " + content;
+                break;
+            default:
+                formatted = content;
+        }
+        String trimmed = formatted.length() > 1900 ? formatted.substring(0, 1900) + "..." : formatted;
+
+        var channel = jda.getTextChannelById(channelId);
+        if (channel == null) {
+            LOGGER.warn("Channel not found: {}", channelId);
+            return;
+        }
+        try {
+            channel.sendMessage(trimmed).complete(); // синхронно!
+            LOGGER.debug("Message sent synchronously to {}", channelId);
+        } catch (Exception e) {
+            LOGGER.error("Failed to send message sync", e);
+        }
+    }
+
+    public void sendEmbedSync(String channelId, MessageEmbed embed) {
+        if (jda == null || !isValidId(channelId)) {
+            LOGGER.warn("Cannot send embed sync: bot not ready or invalid channel");
+            return;
+        }
+        var channel = jda.getTextChannelById(channelId);
+        if (channel == null) {
+            LOGGER.warn("Channel not found: {}", channelId);
+            return;
+        }
+        try {
+            channel.sendMessageEmbeds(embed).complete(); // синхронно!
+            LOGGER.debug("Embed sent synchronously to {}", channelId);
+        } catch (Exception e) {
+            LOGGER.error("Failed to send embed sync", e);
         }
     }
 }

@@ -1,15 +1,19 @@
 package org.hodytrapl.discord_linker.events;
 
 import com.mojang.logging.LogUtils;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.hodytrapl.discord_linker.Discord_linker;
+import org.hodytrapl.discord_linker.config.events.EventsConfig;
 import org.hodytrapl.discord_linker.discord.DiscordBotManager;
+import org.hodytrapl.discord_linker.discord.GeneratorEmbedMessage;
 import org.hodytrapl.discord_linker.discord.enums.DiscordMessageType;
-import org.hodytrapl.discord_linker.utils.config.EventChannelHelper;
+import org.hodytrapl.discord_linker.utils.ValidationUtils;
 import org.hodytrapl.discord_linker.utils.config.EventsConfigHelper;
+import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 
 @EventBusSubscriber(modid = "discord_linker")
@@ -18,44 +22,69 @@ public class JoinLeavePlayerListener {
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        // First check if any events channel is available
-        if (!EventChannelHelper.areEventsEnabled()) return;
-        // Then check if the specific event is enabled in config
-        if (!EventsConfigHelper.isPlayerJoinEnabled()) return;
+        // проверка на срабатывания ивента
+        if (!EventsConfigHelper.isEventEnabled(EventsConfig.INSTANCE.playerJoin)) return;
 
+        //форматируем сообщение
         Player player = event.getEntity();
         String username = player.getName().getString();
-        String message = EventChannelHelper.formatPlayerJoinMessage(username);
+        String message = EventsConfigHelper.replaceUsername(EventsConfigHelper.getRawEventMessage(EventsConfig.INSTANCE.playerJoin),username);
 
+        //находим бота
         DiscordBotManager botManager = Discord_linker.getBotManager();
-        String channelId = EventChannelHelper.getEventsChannelId();
+        String channelId = MainConfigHelper.getRawChannelId();
+        String eventId = MainConfigHelper.getRawEventsId();
+        String correctId=eventId;
+        if(!ValidationUtils.isValidId(eventId)){
+            if(!ValidationUtils.isValidId(channelId)){
+                return;
+            }
+            correctId=channelId;
+        }
 
-        if (channelId != null) {
-            // Optional: check if embed is enabled for join event
-            if (EventsConfigHelper.useEmbedForPlayerJoin()) {
-                // TODO: implement sendEmbed method in DiscordBotManager
-                LOGGER.debug("Embed for join event not yet implemented, sending plain text");
-                botManager.sendMessage(channelId, message, DiscordMessageType.CHAT_MESSAGE);
+        //даем запрос
+        if (ValidationUtils.isValidId(correctId)) {
+            // проверка embed включен
+            if (EventsConfigHelper.useEmbedForEvent(EventsConfig.INSTANCE.playerJoin)) {
+                MessageEmbed embed = GeneratorEmbedMessage.buildEmbed(EventsConfig.INSTANCE.playerJoin, username);
+                botManager.sendEmbed(correctId, embed);
             } else {
-                botManager.sendMessage(channelId, message, DiscordMessageType.CHAT_MESSAGE);
+                botManager.sendMessage(correctId, message, DiscordMessageType.CHAT_MESSAGE);
             }
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (!EventChannelHelper.areEventsEnabled()) return;
-        if (!EventsConfigHelper.isPlayerLeaveEnabled()) return;
+        // проверка на срабатывания ивента
+        if (!EventsConfigHelper.isEventEnabled(EventsConfig.INSTANCE.playerLeave)) return;
 
+        //форматируем сообщение
         Player player = event.getEntity();
         String username = player.getName().getString();
-        String message = EventChannelHelper.formatPlayerLeaveMessage(username);
+        String message = EventsConfigHelper.replaceUsername(EventsConfigHelper.getRawEventMessage(EventsConfig.INSTANCE.playerLeave),username);
 
+        //находим бота
         DiscordBotManager botManager = Discord_linker.getBotManager();
-        String channelId = EventChannelHelper.getEventsChannelId();
+        String channelId = MainConfigHelper.getRawChannelId();
+        String eventId = MainConfigHelper.getRawEventsId();
+        String correctId=eventId;
+        if(!ValidationUtils.isValidId(eventId)){
+            if(!ValidationUtils.isValidId(channelId)){
+                return;
+            }
+            correctId=channelId;
+        }
 
-        if (channelId != null) {
-            botManager.sendMessage(channelId, message, DiscordMessageType.CHAT_MESSAGE);
+        //даем запрос
+        if (ValidationUtils.isValidId(correctId)) {
+            // проверка embed включен
+            if (EventsConfigHelper.useEmbedForEvent(EventsConfig.INSTANCE.playerLeave)) {
+                MessageEmbed embed = GeneratorEmbedMessage.buildEmbed(EventsConfig.INSTANCE.playerLeave, username);
+                botManager.sendEmbed(correctId, embed);
+            } else {
+                botManager.sendMessage(correctId, message, DiscordMessageType.CHAT_MESSAGE);
+            }
         }
     }
 }

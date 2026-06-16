@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import org.hodytrapl.discord_linker.Discord_linker;
 
 public class ReloadCommand {
+    //регистрируем команду
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("reload")
                 .requires(source -> source.hasPermission(4)) // только операторы

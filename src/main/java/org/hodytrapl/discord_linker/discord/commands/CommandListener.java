@@ -9,6 +9,8 @@ import org.hodytrapl.discord_linker.config.commands.CommandsConfig;
 import org.hodytrapl.discord_linker.config.general.MainConfig;
 import org.hodytrapl.discord_linker.discord.DiscordBotManager;
 import org.hodytrapl.discord_linker.discord.enums.DiscordMessageType;
+import org.hodytrapl.discord_linker.utils.config.CommandsConfigHelper;
+import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -21,11 +23,12 @@ public class CommandListener extends ListenerAdapter {
     private final String allowedChannelId;
 
     public CommandListener() {
-        this.commandPrefix = CommandsConfig.INSTANCE.getCommandPrefix();
-        this.otherPrefixes = CommandsConfig.INSTANCE.getOtherBotsPrefixes();
+        this.commandPrefix = CommandsConfigHelper.getCommandPrefix();
 
-        String commandsId = MainConfig.INSTANCE.commandsID.get();
-        String channelId = MainConfig.INSTANCE.channelID.get();
+        this.otherPrefixes = CommandsConfigHelper.getOtherBotsPrefixes();
+
+        String commandsId = MainConfigHelper.getRawCommandsId();
+        String channelId = MainConfigHelper.getRawChannelId();
         String resolvedId;
 
         if (isValidId(commandsId)) {
@@ -78,11 +81,11 @@ public class CommandListener extends ListenerAdapter {
             server.execute(() -> {
                 String output = switch (command) {
                     case "tps" -> MinecraftCommandExecutor.executeCommandWithOutput(
-                            CommandsConfig.INSTANCE.getTPSCommand().minecraftCommand());
+                            CommandsConfigHelper.getEventMinecraftCommand(CommandsConfig.INSTANCE.TPSCommand));
                     case "modlist" -> MinecraftCommandExecutor.executeCommandWithOutput(
-                            CommandsConfig.INSTANCE.getModListCommand().minecraftCommand());
+                            CommandsConfigHelper.getEventMinecraftCommand(CommandsConfig.INSTANCE.modListCommand));
                     case "list" -> MinecraftCommandExecutor.executeCommandWithOutput(
-                            CommandsConfig.INSTANCE.getOnlineListCommand().minecraftCommand());
+                            CommandsConfigHelper.getEventMinecraftCommand(CommandsConfig.INSTANCE.onlineListCommand));
                     default -> "Неизвестная команда. Доступно: tps, modlist, list.";
                 };
 

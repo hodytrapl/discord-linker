@@ -1,47 +1,51 @@
 package org.hodytrapl.discord_linker.utils.config;
 
 import org.hodytrapl.discord_linker.config.commands.CommandsConfig;
+import org.hodytrapl.discord_linker.config.commands.CommandsEntryConfig;
+import org.hodytrapl.discord_linker.config.events.EventEntryConfig;
+
 import java.util.List;
 
 public class CommandsConfigHelper {
 
+    //main
     public static String getCommandPrefix() {
-        return CommandsConfig.INSTANCE.getCommandPrefix();
+        return CommandsConfig.INSTANCE.commandPrefix.get();
     }
 
     public static int getNormalUserPermissionLevel() {
-        return CommandsConfig.INSTANCE.getNormalUserPermissionLevel();
+        return CommandsConfig.INSTANCE.normalUserPermissionLevel.get();
     }
 
     public static int getManagementUserPermissionLevel() {
-        return CommandsConfig.INSTANCE.getManagementUserPermissionLevel();
+        return CommandsConfig.INSTANCE.managementUserPermissionLevel.get();
     }
 
     public static List<? extends String> getOtherBotsPrefixes() {
-        return CommandsConfig.INSTANCE.getOtherBotsPrefixes();
+        return CommandsConfig.INSTANCE.otherBotsPrefixes.get();
     }
 
-    public static String getTpsMinecraftCommand() {
-        return CommandsConfig.INSTANCE.getTPSCommand().minecraftCommand();
+    // ------Command entry------
+
+    //enable
+    public static boolean isEventEnabled(CommandsEntryConfig event) {
+        return event.enabled.get();
     }
 
-    public static String getModListMinecraftCommand() {
-        return CommandsConfig.INSTANCE.getModListCommand().minecraftCommand();
+    //minecraft command
+    public static String getEventMinecraftCommand(CommandsEntryConfig event) {
+        return event.minecraftCommand.get();
     }
 
-    public static String getOnlineListMinecraftCommand() {
-        return CommandsConfig.INSTANCE.getOnlineListCommand().minecraftCommand();
+    //discord command
+    public static String getEventDiscordCommand(CommandsEntryConfig event) {
+        return event.discordCommand.get();
     }
 
-    public static boolean isTpsCommandEnabled() {
-        return CommandsConfig.INSTANCE.getTPSCommand().enabled.get();
+    //management command
+    public static boolean getEventManagementCommand(CommandsEntryConfig event) {
+        return event.managementCommand.get();
     }
 
-    public static boolean isModListCommandEnabled() {
-        return CommandsConfig.INSTANCE.getModListCommand().enabled.get();
-    }
 
-    public static boolean isOnlineListCommandEnabled() {
-        return CommandsConfig.INSTANCE.getOnlineListCommand().enabled.get();
-    }
 }

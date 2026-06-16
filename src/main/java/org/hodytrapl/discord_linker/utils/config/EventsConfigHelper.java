@@ -6,67 +6,83 @@ import java.util.List;
 
 public class EventsConfigHelper {
 
-    // --- Raw message templates (still contain %username% placeholder) ---
-    public static String getRawPlayerJoinMessage() {
-        return EventsConfig.INSTANCE.playerJoin.eventMessage.get();
+    // --- главный конфиг событий ---
+
+
+    // --- включены ли ивенты ---
+    public static boolean isEventEnabled(EventEntryConfig event) {
+        return event.eventEnable.get();
     }
 
-    public static String getRawPlayerLeaveMessage() {
-        return EventsConfig.INSTANCE.playerLeave.eventMessage.get();
+    //сообщения без форматирования текста
+    public static String getRawEventMessage(EventEntryConfig event) {
+        return event.eventMessage.get();
     }
 
-    public static String getRawServerStartedMessage() {
-        return EventsConfig.INSTANCE.serverStarted.eventMessage.get();
+    // --- Геттеры для embed --- ---
+    public static boolean useEmbedForEvent(EventEntryConfig event) {
+        return event.embedEnable.get();
     }
 
-    public static String getRawServerStoppedMessage() {
-        return EventsConfig.INSTANCE.serverStopped.eventMessage.get();
+    public static String getEmbedAuthorName(EventEntryConfig event) {
+        return event.embedAuthorName.get();
     }
 
-    public static String getRawServerCrashedMessage() {
-        return EventsConfig.INSTANCE.serverCrashed.eventMessage.get();
+    public static String getEmbedAuthorIcon(EventEntryConfig event) {
+        return event.embedAuthorIcon.get();
     }
 
-    // --- Enable/disable per event ---
-    public static boolean isPlayerJoinEnabled() {
-        return EventsConfig.INSTANCE.playerJoin.eventEnable.get();
+    public static String getEmbedTitle(EventEntryConfig event) {
+        return event.embedTitle.get();
     }
 
-    public static boolean isPlayerLeaveEnabled() {
-        return EventsConfig.INSTANCE.playerLeave.eventEnable.get();
+    public static String getEmbedDescription(EventEntryConfig event) {
+        return event.embedDescription.get();
     }
 
-    public static boolean isServerStartedEnabled() {
-        return EventsConfig.INSTANCE.serverStarted.eventEnable.get();
+    public static String getEmbedColor(EventEntryConfig event) {
+        return event.embedColor.get();
     }
 
-    public static boolean isServerStoppedEnabled() {
-        return EventsConfig.INSTANCE.serverStopped.eventEnable.get();
+    public static String getEmbedThumbnail(EventEntryConfig event) {
+        return event.embedThumbnail.get();
     }
 
-    public static boolean isServerCrashedEnabled() {
-        return EventsConfig.INSTANCE.serverCrashed.eventEnable.get();
+    public static String getEmbedImage(EventEntryConfig event) {
+        return event.embedImage.get();
     }
 
-    // --- Embed enable and full config objects ---
-    public static boolean useEmbedForPlayerJoin() {
-        return EventsConfig.INSTANCE.playerJoin.embedEnable.get();
+    public static String getEmbedFooterIcon(EventEntryConfig event) {
+        return event.embedFooterIcon.get();
     }
 
-    public static boolean useEmbedForPlayerLeave() {
-        return EventsConfig.INSTANCE.playerLeave.embedEnable.get();
+    public static String getEmbedFooter(EventEntryConfig event) {
+        return event.embedFooter.get();
     }
 
-    public static EventEntryConfig getPlayerJoinConfig() {
-        return EventsConfig.INSTANCE.playerJoin;
+    public static boolean isEmbedTimestampEnabled(EventEntryConfig event) {
+        return event.embedOnTimestamp.get();
     }
 
-    public static EventEntryConfig getPlayerLeaveConfig() {
-        return EventsConfig.INSTANCE.playerLeave;
+    public static List<? extends String> getEmbedFields(EventEntryConfig event) {
+        return event.embedFields.get();
     }
 
-    // --- Placeholder replacement ---
+    // --- Удобные методы с заменой плейсхолдеров для embed ---
+    public static String getEmbedTitleWithUsername(EventEntryConfig event, String username) {
+        return replaceUsername(getEmbedTitle(event), username);
+    }
+
+    public static String getEmbedDescriptionWithUsername(EventEntryConfig event, String username) {
+        return replaceUsername(getEmbedDescription(event), username);
+    }
+
+    // --- замена плейсхолдеров ---
     public static String replaceUsername(String template, String username) {
         return template.replace("%username%", username);
+    }
+
+    public static String replaceHeadPlayer(String template, String username) {
+        return template.replace("%headplayer%", "https://minotar.net/avatar/"+username+"/64");
     }
 }

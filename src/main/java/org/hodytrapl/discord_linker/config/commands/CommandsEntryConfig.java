@@ -8,9 +8,11 @@ public class CommandsEntryConfig {
     public final ModConfigSpec.ConfigValue<String> discordCommand;
     public final ModConfigSpec.BooleanValue managementCommand;
 
+    //конфигуратор комманд
     public CommandsEntryConfig(ModConfigSpec.Builder builder, String commandName,
                                String defaultMinecraftCommand, String defaultDiscordCommand,
                                boolean defaultManagement) {
+        //группируем по имени команды
         builder.comment("Configuration for /" + commandName + " command").push(commandName);
 
         enabled = builder
@@ -29,25 +31,6 @@ public class CommandsEntryConfig {
                 .comment("Is this command restricted to management users?")
                 .define("management_command", defaultManagement);
 
-        builder.pop();
-    }
-
-    public String enabled() {
-        return String.valueOf(enabled.get());
-    }
-
-    // Getter for minecraftCommand as String
-    public String minecraftCommand() {
-        return minecraftCommand.get();
-    }
-
-    // Getter for discordCommand as String
-    public String discordCommand() {
-        return discordCommand.get();
-    }
-
-    // Getter for managementCommand as String
-    public String managementCommand() {
-        return String.valueOf(managementCommand.get());
+        builder.pop();//фиксируем
     }
 }

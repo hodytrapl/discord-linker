@@ -10,13 +10,13 @@ public class CommandsConfig {
     public static final CommandsConfig INSTANCE;
     public static final ModConfigSpec SPEC;
 
-    // Global command settings
+    // глобальные настройки группы команд
     public final ModConfigSpec.ConfigValue<String> commandPrefix;
     public final ModConfigSpec.IntValue normalUserPermissionLevel;
     public final ModConfigSpec.IntValue managementUserPermissionLevel;
     public final ModConfigSpec.ConfigValue<List<? extends String>> otherBotsPrefixes;
 
-    // Individual command entries
+    // команды
     public final CommandsEntryConfig TPSCommand;
     public final CommandsEntryConfig modListCommand;
     public final CommandsEntryConfig onlineListCommand;
@@ -29,8 +29,9 @@ public class CommandsConfig {
     }
     @SuppressWarnings("deprecation")
     public CommandsConfig(ModConfigSpec.Builder builder) {
+        //создаем группу
         builder.comment("All command-related settings").push("commands");
-
+        //создаем категории
         commandPrefix = builder
                 .comment("Prefix used for Minecraft commands (e.g. '/' or '!')")
                 .define("command_prefix", "/");
@@ -58,29 +59,7 @@ public class CommandsConfig {
         onlineListCommand = new CommandsEntryConfig(builder, "list",
                 "list", "list", false);
 
-        builder.pop(); // general
+        builder.pop(); // фиксируем конфиг commands
     }
-
-    // ---- Helper getters for convenience ----
-    public String getCommandPrefix() {
-        return commandPrefix.get();
-    }
-
-    public int getNormalUserPermissionLevel() {
-        return normalUserPermissionLevel.get();
-    }
-
-    public int getManagementUserPermissionLevel() {
-        return managementUserPermissionLevel.get();
-    }
-
-    public List<? extends String> getOtherBotsPrefixes() {
-        return otherBotsPrefixes.get();
-    }
-
-    // Command entry getters
-    public CommandsEntryConfig getTPSCommand() { return TPSCommand; }
-    public CommandsEntryConfig getModListCommand() { return modListCommand; }
-    public CommandsEntryConfig getOnlineListCommand() { return onlineListCommand; }
 
 }

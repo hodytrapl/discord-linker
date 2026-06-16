@@ -17,6 +17,8 @@ public class EventsConfig {
         SPEC = pair.getRight();
     }
 
+    public final EventEntryConfig MCtoDC;
+    public final EventEntryConfig DCtoMC;
     public final EventEntryConfig playerJoin;
     public final EventEntryConfig playerLeave;
     public final EventEntryConfig serverStarted;
@@ -25,12 +27,16 @@ public class EventsConfig {
 
 
     public EventsConfig(ModConfigSpec.Builder builder) {
+        //группируем группу команду
         builder.comment("All event-related settings").push("events");
+        //создаем ивенты
+        MCtoDC = new EventEntryConfig(builder, "minecraft_to_discord","","");
+        DCtoMC = new EventEntryConfig(builder, "discord_to_minecraft","","");
         playerJoin = new EventEntryConfig(builder, "player_join","%username% joined in game!","");
         playerLeave = new EventEntryConfig(builder, "player_leave","%username% leave in game!","");
         serverStarted = new EventEntryConfig(builder, "Server_started","Server Started!","");
         serverStopped = new EventEntryConfig(builder, "Server_stopped","Server Stopped!","");
         serverCrashed = new EventEntryConfig(builder, "Server_crashed","Server Crashed!","");
-        builder.pop(); // events
+        builder.pop(); // фиксируем конфиг
     }
 }

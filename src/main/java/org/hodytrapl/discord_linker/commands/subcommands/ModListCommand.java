@@ -9,6 +9,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 
 public class ModListCommand  {
+    //регистрируем команду
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mods")
                 .executes(context -> {
