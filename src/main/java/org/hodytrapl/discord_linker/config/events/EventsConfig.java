@@ -60,8 +60,8 @@ public class EventsConfig {
 
         // Для второго события - сбрасываем на базовые, меняем нужные
         payload = new HashMap<>(basePayload);
-        payload.put("message", "%username%: %message%");
-        payload.put("embed_description", "%username%: %message%");
+        payload.put("message", "[%username%]: %message%");
+        payload.put("embed_description", "how you think its worked?");
         DCtoMC = new EventEntryConfig(builder, "discord_to_minecraft", payload);
 
         payload = new HashMap<>(basePayload);

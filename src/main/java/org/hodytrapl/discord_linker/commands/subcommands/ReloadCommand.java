@@ -6,6 +6,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import org.hodytrapl.discord_linker.Discord_linker;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
 public class ReloadCommand {
     //регистрируем команду
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
@@ -14,7 +16,7 @@ public class ReloadCommand {
                 .executes(context -> {
                     // Перезапускаем бота
                     Discord_linker.getBotManager().reloadBot();
-                    context.getSource().sendSuccess(() -> Component.literal("Discord bot reloaded"), true);
+                    context.getSource().sendSuccess(() -> Component.literal(getMessage("mod.commands.subcommands.reloadcommand.botreloadsuccess")+"\n"), true);
                     return 1;
                 });
     }

@@ -1,2 +1,16 @@
 {
+  "mod.commands.subcommands.modlistcommand.modlist": "Mod list:",
+  "mod.commands.subcommands.reloadcommand.botreloadsuccess": "Bot reloaded success!",
+  "mod.discord.commands.using.commandid": "Using commands channel: {0}",
+  "mod.discord.commands.commandsID.notset": "commandsID not set, falling back to channelID: {0}",
+  "mod.discord.commands.notconfigured.commandid.channelid": "Neither commandsID nor channelID is configured. Commands will be ignored.",
+  "mod.discord.commands.notconfigured.ignorecommand": "Discord commands are disabled because no channel ID is set.",
+  "mod.discord.commands.accept.channelid": "Commands will only be accepted in channel ID: {0}",
+  "mod.logger.error.membernull": "Member is null, cannot check role.",
+  "mod.logger.error.invalid.idrole": "Invalid role ID in the configuration: {0}",
+  "mod.logger.error.corrupted.idrole": "Configuration error: The role is not defined correctly.",
+  "mod.logger.error.nohavepermissions": " “**Error:** You do not have sufficient permissions to execute this command.”",
+  "mod.logger.error.serverunavailable": "Error: Server Unavailable",
+  "mod.logger.needrole": "needed this role <@&{0}>",
+  "mod.discord.commands.sending.commands": "executing the command..."
 }

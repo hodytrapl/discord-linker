@@ -9,6 +9,8 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 import org.hodytrapl.discord_linker.utils.config.CommandsConfigHelper;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
 public class ModListCommand  {
     //регистрируем команду
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
@@ -25,7 +27,7 @@ public class ModListCommand  {
                         modsList.append("- ").append(modName).append(" v").append(version).append("\n");
                     }
                     context.getSource().sendSuccess(
-                            () -> Component.literal("Mod list:\n" + modsList.toString()+"\n"),
+                            () -> Component.literal(getMessage("mod.commands.subcommands.modlistcommand.modlist")+"\n" + modsList.toString()+"\n"),
                             false
                     );
                     return 1;

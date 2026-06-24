@@ -15,6 +15,7 @@ import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
 import static org.hodytrapl.discord_linker.utils.ValidationUtils.isValidId;
 
 public class CommandListener extends ListenerAdapter {
@@ -25,7 +26,6 @@ public class CommandListener extends ListenerAdapter {
 
     public CommandListener() {
         this.commandPrefix = CommandsConfigHelper.getCommandPrefix();
-
         this.otherPrefixes = CommandsConfigHelper.getOtherBotsPrefixes();
 
         String commandsId = MainConfigHelper.getRawCommandsId();
@@ -34,20 +34,20 @@ public class CommandListener extends ListenerAdapter {
 
         if (isValidId(commandsId)) {
             resolvedId = commandsId;
-            LOGGER.info("Using commands channel: {}", resolvedId);
+            LOGGER.info(getMessage("mod.discord.commands.using.commandid"), resolvedId);
         } else if (isValidId(channelId)) {
             resolvedId = channelId;
-            LOGGER.info("commandsID not set, falling back to channelID: {}", resolvedId);
+            LOGGER.info(getMessage("mod.discord.commands.commandsID.notset"), resolvedId);
         } else {
-            LOGGER.warn("Neither commandsID nor channelID is configured. Commands will be ignored.");
+            LOGGER.warn(getMessage("mod.discord.commands.notconfigured.commandid.channelid"));
             resolvedId = "DISABLED";
         }
 
         this.allowedChannelId = resolvedId;
         if (allowedChannelId.equals("DISABLED")) {
-            LOGGER.info("Discord commands are disabled because no channel ID is set.");
+            LOGGER.info(getMessage("mod.discord.commands.notconfigured.ignorecommand"));
         } else {
-            LOGGER.info("Commands will only be accepted in channel ID: {}", allowedChannelId);
+            LOGGER.info(getMessage("mod.discord.commands.accept.channelid"), allowedChannelId);
         }
     }
 
@@ -61,37 +61,36 @@ public class CommandListener extends ListenerAdapter {
         String rawMessage = event.getMessage().getContentRaw();
 
         // 1. Определяем, какой префикс использован
-                String usedPrefix = null;
-                if (rawMessage.startsWith(commandPrefix)) {
-                    usedPrefix = commandPrefix;
-                } else {
-                    for (String other : otherPrefixes) {
-                        if (rawMessage.startsWith(other)) {
-                            usedPrefix = other;
-                            break;
-                        }
-                    }
+        String usedPrefix = null;
+        if (rawMessage.startsWith(commandPrefix)) {
+            usedPrefix = commandPrefix;
+        } else {
+            for (String other : otherPrefixes) {
+                if (rawMessage.startsWith(other)) {
+                    usedPrefix = other;
+                    break;
                 }
+            }
+        }
 
         // Если ни один префикс не подошёл — выходим
-                if (usedPrefix == null) return;
+        if (usedPrefix == null) return;
 
         // 2. Проверка на комбинацию: если использован основной префикс, и после него идёт другой префикс — игнорируем
-                if (usedPrefix.equals(commandPrefix)) {
-                    String rest = rawMessage.substring(commandPrefix.length());
-                    for (String other : otherPrefixes) {
-                        if (rest.startsWith(other)) {
-                            return; // игнорируем сообщения вида "/!tps"
-                        }
-                    }
+        if (usedPrefix.equals(commandPrefix)) {
+            String rest = rawMessage.substring(commandPrefix.length());
+            for (String other : otherPrefixes) {
+                if (rest.startsWith(other)) {
+                    return; // игнорируем сообщения вида "/!tps"
                 }
+            }
+        }
 
         // 3. Удаляем использованный префикс и разбираем команду
-                String withoutPrefix = rawMessage.substring(usedPrefix.length());
-                String[] parts = withoutPrefix.split("\\s+");
-                if (parts.length == 0) return;
-                String command = parts[0].toLowerCase();
-
+        String withoutPrefix = rawMessage.substring(usedPrefix.length());
+        String[] parts = withoutPrefix.split("\\s+");
+        if (parts.length == 0) return;
+        String command = parts[0].toLowerCase();
 
         // Определяем, какая команда запрошена, и проверяем её включённость
         CommandsEntryConfig targetConfig = null;
@@ -110,11 +109,11 @@ public class CommandListener extends ListenerAdapter {
             return;
         }
 
-        //проверка команда для админов и иявляется пользователь админом
-        if(CommandsConfigHelper.getEventManagementCommand(targetConfig)){
+        // проверка команда для админов и является ли пользователь админом
+        if (CommandsConfigHelper.getEventManagementCommand(targetConfig)) {
             Member member = event.getMember();
             if (member == null) {
-                LOGGER.warn("Member is null, cannot check role.");
+                LOGGER.warn(getMessage("mod.logger.error.membernull"));
                 return;
             }
 
@@ -123,26 +122,28 @@ public class CommandListener extends ListenerAdapter {
             try {
                 roleId = Long.parseLong(roleIdStr);
             } catch (NumberFormatException e) {
-                LOGGER.error("Некорректный ID роли в конфиге: {}", roleIdStr);
-                event.getChannel().sendMessage("Ошибка конфигурации: роль не задана корректно.").queue();
+                LOGGER.error(getMessage("mod.logger.error.invalid.idrole"), roleIdStr);
+                event.getChannel().sendMessage(getMessage("mod.logger.error.corrupted.idrole")).queue();
                 return;
             }
 
             boolean hasRole = member.getRoles().stream()
                     .anyMatch(role -> role.getIdLong() == roleId);
-            if(!hasRole) {
-                event.getChannel().sendMessage("**Ошибка:** у вас недостаточно прав для выполнения этой команды.\n" +
-                        "Требуется роль <@&" + roleId + ">.").queue();
+            if (!hasRole) {
+                event.getChannel().sendMessage(
+                        getMessage("mod.logger.error.nohavepermissions") + "\n" +
+                                getMessage("mod.logger.needrole", roleId)
+                ).queue();
                 return;
             }
         }
 
         // Если дошли сюда – команда известна и включена, выполняем
         CommandsEntryConfig finalTargetConfig = targetConfig;
-        event.getChannel().sendMessage("Выполняю команду...").queue(msg -> {
+        event.getChannel().sendMessage(getMessage("mod.discord.commands.sending.commands")).queue(msg -> {
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             if (server == null) {
-                msg.editMessage("Ошибка: сервер недоступен").queue();
+                msg.editMessage(getMessage("mod.logger.error.serverunavailable")).queue();
                 return;
             }
 

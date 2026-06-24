@@ -87,11 +87,7 @@ public class GeneratorEmbedMessage extends ListenerAdapter {
         return builder.build();
     }
 
-    /**
-     * Удобная перегрузка для случаев, когда нужен только %username%.
-     * Создаёт карту с ключом "username" и значением, а также автоматически добавляет
-     * "headplayer" для совместимости со старым поведением.
-     */
+
     public static MessageEmbed buildEmbed(EventEntryConfig event, String username) {
         Map<String, String> placeholders = new HashMap<>();
         if (username != null) {

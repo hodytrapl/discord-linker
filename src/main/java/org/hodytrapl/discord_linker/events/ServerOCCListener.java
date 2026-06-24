@@ -2,6 +2,7 @@ package org.hodytrapl.discord_linker.events;
 
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.*;
@@ -23,9 +24,11 @@ public class ServerOCCListener {
 
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
+        MinecraftServer server = event.getServer();
         isGracefulShutdown = false; // сброс при старте
         LOGGER.info("Server starting...");
-        Discord_linker.getBotManager().initializeBot();
+        Discord_linker.setServer(server);
+        Discord_linker.getBotManager().initializeBot(server);
         // Для старта можно оставить асинхронную отправку (сервер ещё работает)
         sendEventMessage(EventsConfig.INSTANCE.serverStarted, false);
     }

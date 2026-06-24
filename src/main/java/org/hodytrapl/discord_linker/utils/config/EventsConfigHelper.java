@@ -170,6 +170,4 @@ public class EventsConfigHelper {
         }
         return result;
     }
-
-    // Также можно добавить вариант с varargs для полей, но это редко нужно, так как поля обычно сложнее.
 }

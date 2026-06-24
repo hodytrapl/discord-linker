@@ -7,13 +7,14 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.hodytrapl.discord_linker.config.general.MainConfig;
+import net.minecraft.server.MinecraftServer;
+import org.hodytrapl.discord_linker.Discord_linker;
 import org.hodytrapl.discord_linker.discord.commands.CommandListener;
 import org.hodytrapl.discord_linker.discord.enums.DiscordMessageType;
+import org.hodytrapl.discord_linker.discord.events.MessageListener;
 import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 
-import javax.security.auth.login.LoginException;
 
 import static org.hodytrapl.discord_linker.utils.ValidationUtils.isValidId;
 
@@ -22,12 +23,13 @@ public class DiscordBotManager {
     private JDA jda;
     private boolean initialized = false;
     private final Object lock = new Object();
+    private static MinecraftServer currentServer;
 
-    public void initializeBot() {
+    public void initializeBot(MinecraftServer server) {
         synchronized (lock) {
             if (initialized) return;
             if (!MainConfigHelper.isBotEnabled()) return;
-            String token = MainConfig.INSTANCE.botToken.get();
+            String token = MainConfigHelper.getBotToken();
             if (token.equals("INSERT_BOT_TOKEN_HERE") || token.equals("BOT_TOKEN_HERE")) {
                 LOGGER.warn("Discord bot token not configured. Bot will not start.");
                 return;
@@ -41,6 +43,8 @@ public class DiscordBotManager {
                 jda = builder.build().awaitReady();
                 setBotPresence();
                 initialized = true;
+                currentServer = server;
+                jda.addEventListener(new MessageListener(server));
                 LOGGER.info("Discord bot logged in as {}", jda.getSelfUser().getName());
             } catch (Exception e) {
                 LOGGER.error("Failed to start Discord bot: {}", e.getMessage());
@@ -66,7 +70,7 @@ public class DiscordBotManager {
             shutdown();
             // Небольшая задержка для корректного завершения
             try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-            initializeBot();
+            initializeBot(currentServer);
         }
     }
     public void sendMessage(String channelId, String content, DiscordMessageType type) {
