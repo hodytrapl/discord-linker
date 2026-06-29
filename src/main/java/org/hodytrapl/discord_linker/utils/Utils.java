@@ -5,6 +5,8 @@ import net.minecraft.ChatFormatting;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
 
 public class Utils {
     public static String cleanFormatting(String text) {
@@ -38,7 +40,7 @@ public class Utils {
     //по парам ключ-значение,ключ-значение
     public static String formatPlaceholder(String text, String... pairs) {
         if (pairs == null || pairs.length % 2 != 0) {
-            throw new IllegalArgumentException("Pairs must be even number of arguments");
+            throw new IllegalArgumentException(getMessage("mod.typelogger.utils.error.placeholder.arg"));
         }
         Map<String, String> map = new HashMap<>();
         for (int i = 0; i < pairs.length; i += 2) {

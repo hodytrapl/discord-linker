@@ -52,13 +52,13 @@ public class CommandsConfig {
                         obj -> obj instanceof String && !((String) obj).isEmpty());
 
 
-        TPSCommand = new CommandsEntryConfig(builder, "tps",
+        TPSCommand = new CommandsEntryConfig(builder, "command1",
                 "neoforge tps", "tps", false);
 
-        modListCommand = new CommandsEntryConfig(builder, "modlist",
+        modListCommand = new CommandsEntryConfig(builder, "command2",
                 "discordlinker mods", "mods", false);
 
-        onlineListCommand = new CommandsEntryConfig(builder, "list",
+        onlineListCommand = new CommandsEntryConfig(builder, "command3",
                 "list", "list", false);
 
         builder.pop(); // фиксируем конфиг commands

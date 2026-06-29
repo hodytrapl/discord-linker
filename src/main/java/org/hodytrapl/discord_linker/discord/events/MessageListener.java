@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import org.hodytrapl.discord_linker.Discord_linker;
 import org.hodytrapl.discord_linker.config.events.EventEntryConfig;
 import org.hodytrapl.discord_linker.config.events.EventsConfig;
 import org.hodytrapl.discord_linker.utils.config.EventsConfigHelper;
@@ -16,13 +17,12 @@ import org.slf4j.Logger;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public class MessageListener extends ListenerAdapter {
-    private final MinecraftServer server; // храним ссылку
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
+public class MessageListener extends ListenerAdapter {// храним ссылку
 
     // Конструктор принимает сервер при создании
-    public MessageListener(MinecraftServer server) {
-        this.server = server;
-    }
+    public MessageListener() {}
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
@@ -41,11 +41,20 @@ public class MessageListener extends ListenerAdapter {
         username = username+":0000";
         String messageContent = event.getMessage().getContentRaw();
 
+        MinecraftServer server = Discord_linker.getServer();
+        if (server == null) {
+            LOGGER.warn(getMessage("mod.typelogger.discord.error.serverminecraft.null"));
+            return;
+        }
         // Вызываем отдельный метод для отправки
         sendMessageToMinecraft(server,username,messageContent);
     }
 
     private void sendMessageToMinecraft(MinecraftServer server, String discordName, String message) {
+        if (server == null) {
+            LOGGER.warn(getMessage("mod.typelogger.discord.error.serverminecraft.null"));
+            return;
+        }
         // 1. Формируем строку с возможными цветовыми кодами в формате '&'
         String rawMessage = EventsConfigHelper.getFormattedEventMessage(EventsConfig.INSTANCE.DCtoMC, "username",discordName,"message",message);
 

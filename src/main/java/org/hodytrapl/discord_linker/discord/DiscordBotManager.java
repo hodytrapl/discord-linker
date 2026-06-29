@@ -11,11 +11,13 @@ import net.minecraft.server.MinecraftServer;
 import org.hodytrapl.discord_linker.Discord_linker;
 import org.hodytrapl.discord_linker.discord.commands.CommandListener;
 import org.hodytrapl.discord_linker.discord.enums.DiscordMessageType;
+import org.hodytrapl.discord_linker.discord.events.ChannelUpdateService;
 import org.hodytrapl.discord_linker.discord.events.MessageListener;
 import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
 import static org.hodytrapl.discord_linker.utils.ValidationUtils.isValidId;
 
 public class DiscordBotManager {
@@ -24,6 +26,7 @@ public class DiscordBotManager {
     private boolean initialized = false;
     private final Object lock = new Object();
     private static MinecraftServer currentServer;
+    private ChannelUpdateService channelUpdateService;
 
     public void initializeBot(MinecraftServer server) {
         synchronized (lock) {
@@ -31,23 +34,27 @@ public class DiscordBotManager {
             if (!MainConfigHelper.isBotEnabled()) return;
             String token = MainConfigHelper.getBotToken();
             if (token.equals("INSERT_BOT_TOKEN_HERE") || token.equals("BOT_TOKEN_HERE")) {
-                LOGGER.warn("Discord bot token not configured. Bot will not start.");
+                LOGGER.warn(getMessage("mod.typelogger.discord.bot.dontconfigurated"));
                 return;
             }
 
             try {
                 JDABuilder builder = JDABuilder.createDefault(token);
                 builder.enableIntents(GatewayIntent.MESSAGE_CONTENT);
-                // При каждом запуске создаём новый CommandListener (он прочитает свежие настройки)
                 builder.addEventListeners(new CommandListener());
+
                 jda = builder.build().awaitReady();
                 setBotPresence();
                 initialized = true;
                 currentServer = server;
-                jda.addEventListener(new MessageListener(server));
-                LOGGER.info("Discord bot logged in as {}", jda.getSelfUser().getName());
+                jda.addEventListener(new MessageListener());
+
+                channelUpdateService = ChannelUpdateService.getInstance();
+                channelUpdateService.initialize(jda);
+
+                LOGGER.info(getMessage("mod.typelogger.discord.bot.loggedin",jda.getSelfUser().getName()));
             } catch (Exception e) {
-                LOGGER.error("Failed to start Discord bot: {}", e.getMessage());
+                LOGGER.error(getMessage("mod.typelogger.discord.bot.startfailed",e.getMessage()));
             }
         }
     }
@@ -56,7 +63,14 @@ public class DiscordBotManager {
         return jda;
     }
 
+    public ChannelUpdateService getChannelUpdateService() {
+        return channelUpdateService;
+    }
+
     public void shutdown() {
+        if (channelUpdateService != null) {
+            channelUpdateService.shutdown();
+        }
         if (jda != null) {
             jda.shutdown();
             jda = null;
@@ -65,8 +79,11 @@ public class DiscordBotManager {
     }
 
     public void reloadBot() {
-        LOGGER.info("Reloading Discord bot due to config change...");
+        LOGGER.info(getMessage("mod.typelogger.discord.bot.reloading"));
         synchronized (lock) {
+            if (channelUpdateService != null) {
+                channelUpdateService.reload();
+            }
             shutdown();
             // Небольшая задержка для корректного завершения
             try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
@@ -75,20 +92,20 @@ public class DiscordBotManager {
     }
     public void sendMessage(String channelId, String content, DiscordMessageType type) {
         if (jda == null) {
-            LOGGER.warn("Cannot send Discord message – bot not initialized");
+            LOGGER.warn(getMessage("mod.typelogger.discord.message.notinitialized"));
             return;
         }
 
         // 2. Validate channel ID using the same logic as CommandListener
         if (!isValidId(channelId)) {
-            LOGGER.warn("Invalid or disabled channel ID: {}. Message not sent.", channelId);
+            LOGGER.warn(getMessage("mod.typelogger.discord.message.invalidchannel",channelId));
             return;
         }
 
         // 3. Handle null/empty content
         if (content == null) content = "";
         if (content.isEmpty()) {
-            LOGGER.debug("Empty message content – nothing to send");
+            LOGGER.debug(getMessage("mod.typelogger.discord.message.emptycontent"));
             return;
         }
 
@@ -112,40 +129,40 @@ public class DiscordBotManager {
 
         jda.getTextChannelById(channelId)
                 .sendMessage(trimmed)
-                .queue(null, failure -> LOGGER.error("Failed to send Discord message", failure));
+                .queue(null, failure -> LOGGER.error(getMessage("mod.typelogger.discord.message.sendfailed",failure)));
     }
 
     private void setBotPresence() {
         if (jda != null && MainConfigHelper.isPresenceEnabled()) {
             String presenceMessage = MainConfigHelper.getPresenceMessage();
             jda.getPresence().setPresence(OnlineStatus.ONLINE, Activity.playing(presenceMessage));
-            LOGGER.info("Discord presence set to: Playing {}", presenceMessage);
+            LOGGER.info(getMessage("mod.typelogger.discord.presence.set",presenceMessage));
         }
     }
 
     public void sendEmbed(String channelId, MessageEmbed embed) {
         if (jda == null || !isValidId(channelId)) {
-            LOGGER.warn("Cannot send embed: bot not ready or invalid channel");
+            LOGGER.warn(getMessage("mod.typelogger.discord.embed.notready"));
             return;
         }
         var channel = jda.getTextChannelById(channelId);
         if (channel == null) {
-            LOGGER.warn("Channel not found: {}", channelId);
+            LOGGER.warn(getMessage("mod.typelogger.discord.channel.notfound",channelId));
             return;
         }
         channel.sendMessageEmbeds(embed).queue(
                 null,
-                failure -> LOGGER.error("Failed to send embed", failure)
+                failure -> LOGGER.error(getMessage("mod.typelogger.discord.embed.sendfailed", failure))
         );
     }
 
     public void sendMessageSync(String channelId, String content, DiscordMessageType type) {
         if (jda == null) {
-            LOGGER.warn("Cannot send Discord message – bot not initialized");
+            LOGGER.warn(getMessage("mod.typelogger.discord.message.notinitialized"));
             return;
         }
         if (!isValidId(channelId)) {
-            LOGGER.warn("Invalid channel ID: {}", channelId);
+            LOGGER.warn(getMessage("mod.typelogger.discord.channel.notfound", channelId));
             return;
         }
         if (content == null) content = "";
@@ -166,32 +183,32 @@ public class DiscordBotManager {
 
         var channel = jda.getTextChannelById(channelId);
         if (channel == null) {
-            LOGGER.warn("Channel not found: {}", channelId);
+            LOGGER.warn(getMessage("mod.typelogger.discord.channel.notfound", channelId));
             return;
         }
         try {
             channel.sendMessage(trimmed).complete(); // синхронно!
-            LOGGER.debug("Message sent synchronously to {}", channelId);
+            LOGGER.info(getMessage("mod.typelogger.discord.embed.sentsync",channelId));
         } catch (Exception e) {
-            LOGGER.error("Failed to send message sync", e);
+            LOGGER.error(getMessage("mod.typelogger.discord.message.syncfailed",e));
         }
     }
 
     public void sendEmbedSync(String channelId, MessageEmbed embed) {
         if (jda == null || !isValidId(channelId)) {
-            LOGGER.warn("Cannot send embed sync: bot not ready or invalid channel");
+            LOGGER.warn(getMessage("mod.typelogger.discord.embed.syncnotready"));
             return;
         }
         var channel = jda.getTextChannelById(channelId);
         if (channel == null) {
-            LOGGER.warn("Channel not found: {}", channelId);
+            LOGGER.warn(getMessage("mod.typelogger.discord.channel.notfound", channelId));
             return;
         }
         try {
             channel.sendMessageEmbeds(embed).complete(); // синхронно!
-            LOGGER.debug("Embed sent synchronously to {}", channelId);
+            LOGGER.info(getMessage("mod.typelogger.discord.embed.sentsync",channelId));
         } catch (Exception e) {
-            LOGGER.error("Failed to send embed sync", e);
+            LOGGER.error(getMessage("mod.typelogger.discord.message.syncfailed",e));
         }
     }
 }

@@ -41,7 +41,7 @@ public class EventsConfig {
         basePayload.put("embed_title", "");
         basePayload.put("embed_description", "%message%");
         basePayload.put("embed_thumbnail", "");
-        basePayload.put("embed_color", "#ffff00"); // лучше задать явно
+        basePayload.put("embed_color", "#ffff00");
         basePayload.put("embed_image", "");
         basePayload.put("embed_footer_icon", "");
         basePayload.put("embed_footer", "");
@@ -51,45 +51,49 @@ public class EventsConfig {
         // Создаём изменяемую копию для настроек
         Map<String, String> payload = new HashMap<>(basePayload);
         // Для первого события
-        payload.put("message", "[%prefix%] %username% [%suffix%]: %message%");
+        payload.put("message", "<%username%>: %message%");
         payload.put("embed_title", "%username%");
         payload.put("embed_description", "%message%");
+        payload.put("embed_color","#0c9200");
         payload.put("embed_image", "%headplayer%");
-        payload.put("embed_fields", "Roles:|Prefix:%prefix%\\nSuffix:%suffix%|true");
-        MCtoDC = new EventEntryConfig(builder, "minecraft_to_discord", payload);
+        payload.put("embed_fields", "Prefix:|%prefix%|true;-|-|true;Suffix:|%suffix%|true");
+        MCtoDC = new EventEntryConfig(builder, "minecraft_to_discord", payload,true);
 
         // Для второго события - сбрасываем на базовые, меняем нужные
         payload = new HashMap<>(basePayload);
         payload.put("message", "[%username%]: %message%");
         payload.put("embed_description", "how you think its worked?");
-        DCtoMC = new EventEntryConfig(builder, "discord_to_minecraft", payload);
+        DCtoMC = new EventEntryConfig(builder, "discord_to_minecraft", payload,false);
 
         payload = new HashMap<>(basePayload);
         payload.put("message", "%username% joined in game!");
         payload.put("embed_description", "%username% joined in game!");
         payload.put("embed_image", "%headplayer%");
-        playerJoin = new EventEntryConfig(builder, "player_join", payload);
+        playerJoin = new EventEntryConfig(builder, "player_join", payload,true);
 
         payload = new HashMap<>(basePayload);
         payload.put("message", "%username% leave in game!");
         payload.put("embed_description", "%username% leave in game!");
         payload.put("embed_image", "%headplayer%");
-        playerLeave = new EventEntryConfig(builder, "player_leave", payload);
+        playerLeave = new EventEntryConfig(builder, "player_leave", payload,true);
 
         payload = new HashMap<>(basePayload);
         payload.put("message", "Server Started!");
         payload.put("embed_description", "Server Started!");
-        serverStarted = new EventEntryConfig(builder, "server_started", payload);
+        payload.put("embed_color","#09ff00");
+        serverStarted = new EventEntryConfig(builder, "server_started", payload,true);
 
         payload = new HashMap<>(basePayload);
         payload.put("message", "Server Stopped!");
         payload.put("embed_description", "Server Stopped!");
-        serverStopped = new EventEntryConfig(builder, "server_stopped", payload);
+        payload.put("embed_color","#727272");
+        serverStopped = new EventEntryConfig(builder, "server_stopped", payload,true);
 
         payload = new HashMap<>(basePayload);
         payload.put("message", "Server Crashed!");
         payload.put("embed_description", "Server Crashed!");
-        serverCrashed = new EventEntryConfig(builder, "server_crashed", payload);
+        payload.put("embed_color","#ff0000");
+        serverCrashed = new EventEntryConfig(builder, "server_crashed", payload,true);
 
         builder.pop();
     }

@@ -27,7 +27,7 @@ public class ModListCommand  {
                         modsList.append("- ").append(modName).append(" v").append(version).append("\n");
                     }
                     context.getSource().sendSuccess(
-                            () -> Component.literal(getMessage("mod.commands.subcommands.modlistcommand.modlist")+"\n" + modsList.toString()+"\n"),
+                            () -> Component.literal(getMessage("mod.typeminecraft.commands.subcommands.modlistcommand.modlist")+"\n" + modsList.toString()+"\n"),
                             false
                     );
                     return 1;

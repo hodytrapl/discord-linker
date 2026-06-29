@@ -2,21 +2,25 @@ package org.hodytrapl.discord_linker.config.general;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hodytrapl.discord_linker.config.events.EventEntryConfig;
 import org.hodytrapl.discord_linker.config.events.EventsConfig;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainConfig {
-    // --- Base configuration ---
+    // --- базовая настройка ---
     public static final MainConfig INSTANCE;
     public static final ModConfigSpec SPEC;
 
     static {
-        // Create the builder and pass it to the constructor via a lambda
+        // создаем билдера
         Pair<MainConfig, ModConfigSpec> commonPair = new ModConfigSpec.Builder().configure(MainConfig::new);
         INSTANCE = commonPair.getLeft();
         SPEC = commonPair.getRight();
     }
 
-    // --- Configuration parameters (core) ---
+    // --- переменные конфигурации ---
     public final ModConfigSpec.ConfigValue<String> langSelect;
     public final ModConfigSpec.BooleanValue enableBot;
     public final ModConfigSpec.ConfigValue<String> botToken;
@@ -27,9 +31,13 @@ public class MainConfig {
     public final ModConfigSpec.BooleanValue enablePresence;
     public final ModConfigSpec.ConfigValue<String> presenceMessage;
 
-    // Constructor, where the builder passes itself
+    public final MainEntryConfig PlayerOnline;
+    public final MainEntryConfig StaffOnline;
+    public final MainEntryConfig VersionServer;
+
+    // конструктор
     public MainConfig(ModConfigSpec.Builder builder){
-        /* General settings for the main configuration */
+        // Основные настройки
         builder.comment("General settings").push("general");
         langSelect = builder
                 .comment("Language selection for the mod. Supported values: [en_us, ru_ru]")
@@ -52,7 +60,7 @@ public class MainConfig {
                 .comment("The ID of the Discord text channel where slash-command interactions and responses will be handled.")
                 .define("commands_id", "0000000000000000000");
 
-        // Sub-category for Discord presence (Rich Presence)
+        // Активность бота
         builder.comment("Discord Rich Presence settings").push("discord_presence");
         enablePresence = builder
                 .comment("Enable or disable Discord Rich Presence. When enabled, the bot will display a custom status message in Discord.")
@@ -62,6 +70,34 @@ public class MainConfig {
                 .comment("The custom message to display in the Discord Rich Presence status (e.g., the server IP or a custom text).")
                 .define("message", "play.example.com");
         builder.pop();
+
+        //базовый payload
+        Map<String, String> basePayload = new HashMap<>();
+        basePayload.put("enable", "false");
+        basePayload.put("channel_id", "0000000000000000000");
+        basePayload.put("update_interval", "30");
+        basePayload.put("name_channel","");
+        Map<String, String> payload = new HashMap<>(basePayload);
+
+        // Создаём изменяемую копию для настроек
+        payload = new HashMap<>(basePayload);
+        payload.put("name_channel","Online Players: %onlineplayer%/%maxplayer%");
+        // Счетчик людей на сервере
+        PlayerOnline = new MainEntryConfig(builder,"field1",payload);
+
+        // Создаём изменяемую копию для настроек
+        payload = new HashMap<>(basePayload);
+        payload.put("name_channel","Staff Players: %onlinestaff%/%maxstaff%");
+        // админы в онлайн
+        StaffOnline = new MainEntryConfig(builder,"field2",payload);
+
+        // Создаём изменяемую копию для настроек
+        payload = new HashMap<>(basePayload);
+        basePayload.put("update_interval", "-1");
+        payload.put("name_channel","Version: %version_server%");
+        // Счетчик людей на сервере
+        VersionServer = new MainEntryConfig(builder,"field3",payload);
+
         builder.pop();
     }
 }

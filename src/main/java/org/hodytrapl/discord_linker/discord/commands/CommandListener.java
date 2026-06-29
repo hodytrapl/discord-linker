@@ -34,33 +34,31 @@ public class CommandListener extends ListenerAdapter {
 
         if (isValidId(commandsId)) {
             resolvedId = commandsId;
-            LOGGER.info(getMessage("mod.discord.commands.using.commandid"), resolvedId);
+            LOGGER.info(getMessage("mod.typelogger.discord.commands.using.commandid", resolvedId));
         } else if (isValidId(channelId)) {
             resolvedId = channelId;
-            LOGGER.info(getMessage("mod.discord.commands.commandsID.notset"), resolvedId);
+            LOGGER.info(getMessage("mod.typelogger.discord.commands.commandsID.notset", resolvedId));
         } else {
-            LOGGER.warn(getMessage("mod.discord.commands.notconfigured.commandid.channelid"));
+            LOGGER.warn(getMessage("mod.typelogger.discord.commands.notconfigured.commandid.channelid"));
             resolvedId = "DISABLED";
         }
 
         this.allowedChannelId = resolvedId;
         if (allowedChannelId.equals("DISABLED")) {
-            LOGGER.info(getMessage("mod.discord.commands.notconfigured.ignorecommand"));
+            LOGGER.info(getMessage("mod.typelogger.discord.commands.notconfigured.ignorecommand"));
         } else {
-            LOGGER.info(getMessage("mod.discord.commands.accept.channelid"), allowedChannelId);
+            LOGGER.info(getMessage("mod.typelogger.discord.commands.accept.channelid", allowedChannelId));
         }
     }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        // проверки того что бот ли это, включена ли она и прочее
         if (event.getAuthor().isBot()) return;
         if (allowedChannelId.equals("DISABLED")) return;
         if (!event.getChannel().getId().equals(allowedChannelId)) return;
 
         String rawMessage = event.getMessage().getContentRaw();
 
-        // 1. Определяем, какой префикс использован
         String usedPrefix = null;
         if (rawMessage.startsWith(commandPrefix)) {
             usedPrefix = commandPrefix;
@@ -73,26 +71,22 @@ public class CommandListener extends ListenerAdapter {
             }
         }
 
-        // Если ни один префикс не подошёл — выходим
         if (usedPrefix == null) return;
 
-        // 2. Проверка на комбинацию: если использован основной префикс, и после него идёт другой префикс — игнорируем
         if (usedPrefix.equals(commandPrefix)) {
             String rest = rawMessage.substring(commandPrefix.length());
             for (String other : otherPrefixes) {
                 if (rest.startsWith(other)) {
-                    return; // игнорируем сообщения вида "/!tps"
+                    return;
                 }
             }
         }
 
-        // 3. Удаляем использованный префикс и разбираем команду
         String withoutPrefix = rawMessage.substring(usedPrefix.length());
         String[] parts = withoutPrefix.split("\\s+");
         if (parts.length == 0) return;
         String command = parts[0].toLowerCase();
 
-        // Определяем, какая команда запрошена, и проверяем её включённость
         CommandsEntryConfig targetConfig = null;
         String discordCommand1 = CommandsConfigHelper.getEventDiscordCommand(CommandsConfig.INSTANCE.TPSCommand);
         String discordCommand2 = CommandsConfigHelper.getEventDiscordCommand(CommandsConfig.INSTANCE.modListCommand);
@@ -109,11 +103,10 @@ public class CommandListener extends ListenerAdapter {
             return;
         }
 
-        // проверка команда для админов и является ли пользователь админом
         if (CommandsConfigHelper.getEventManagementCommand(targetConfig)) {
             Member member = event.getMember();
             if (member == null) {
-                LOGGER.warn(getMessage("mod.logger.error.membernull"));
+                LOGGER.warn(getMessage("mod.typelogger.logger.error.membernull"));
                 return;
             }
 
@@ -122,8 +115,8 @@ public class CommandListener extends ListenerAdapter {
             try {
                 roleId = Long.parseLong(roleIdStr);
             } catch (NumberFormatException e) {
-                LOGGER.error(getMessage("mod.logger.error.invalid.idrole"), roleIdStr);
-                event.getChannel().sendMessage(getMessage("mod.logger.error.corrupted.idrole")).queue();
+                LOGGER.error(getMessage("mod.typelogger.logger.error.invalid.idrole", roleIdStr));
+                event.getChannel().sendMessage(getMessage("mod.typediscord.logger.error.corrupted.idrole")).queue();
                 return;
             }
 
@@ -131,19 +124,18 @@ public class CommandListener extends ListenerAdapter {
                     .anyMatch(role -> role.getIdLong() == roleId);
             if (!hasRole) {
                 event.getChannel().sendMessage(
-                        getMessage("mod.logger.error.nohavepermissions") + "\n" +
-                                getMessage("mod.logger.needrole", roleId)
+                        getMessage("mod.typediscord.logger.error.nohavepermissions") + "\n" +
+                                getMessage("mod.typediscord.logger.needrole", roleId)
                 ).queue();
                 return;
             }
         }
 
-        // Если дошли сюда – команда известна и включена, выполняем
         CommandsEntryConfig finalTargetConfig = targetConfig;
-        event.getChannel().sendMessage(getMessage("mod.discord.commands.sending.commands")).queue(msg -> {
+        event.getChannel().sendMessage(getMessage("mod.typediscord.discord.commands.sending.commands")).queue(msg -> {
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             if (server == null) {
-                msg.editMessage(getMessage("mod.logger.error.serverunavailable")).queue();
+                msg.editMessage(getMessage("mod.typediscord.logger.error.serverunavailable")).queue();
                 return;
             }
 

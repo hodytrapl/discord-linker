@@ -17,6 +17,8 @@ import org.hodytrapl.discord_linker.utils.config.EventsConfigHelper;
 import org.hodytrapl.discord_linker.utils.config.MainConfigHelper;
 import org.slf4j.Logger;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
 @EventBusSubscriber(modid = "discord_linker")
 public class ServerOCCListener {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -26,7 +28,7 @@ public class ServerOCCListener {
     public static void onServerStarting(ServerStartingEvent event) {
         MinecraftServer server = event.getServer();
         isGracefulShutdown = false; // сброс при старте
-        LOGGER.info("Server starting...");
+        LOGGER.info(getMessage("mod.typelogger.events.server.starting"));
         Discord_linker.setServer(server);
         Discord_linker.getBotManager().initializeBot(server);
         // Для старта можно оставить асинхронную отправку (сервер ещё работает)
@@ -42,10 +44,10 @@ public class ServerOCCListener {
     public static void onServerStopped(ServerStoppedEvent event) {
         boolean crashed = !isGracefulShutdown;
         if (crashed) {
-            LOGGER.error("SERVER CRASH DETECTED!");
+            LOGGER.error(getMessage("mod.typelogger.events.server.crashed"));
             sendEventMessage(EventsConfig.INSTANCE.serverCrashed, true); // синхронно
         } else {
-            LOGGER.info("Server stopped gracefully");
+            LOGGER.info(getMessage("mod.typelogger.events.server.stopped"));
             sendEventMessage(EventsConfig.INSTANCE.serverStopped, true); // синхронно
         }
         // Закрываем бота после отправки

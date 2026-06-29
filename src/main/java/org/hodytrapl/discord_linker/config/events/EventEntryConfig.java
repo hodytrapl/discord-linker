@@ -11,27 +11,27 @@ public class EventEntryConfig {
     // Основные настройки события
     public final ModConfigSpec.BooleanValue eventEnable;
     public final ModConfigSpec.ConfigValue<String> eventMessage;
-    public final ModConfigSpec.BooleanValue embedEnable;
+    public ModConfigSpec.BooleanValue embedEnable;
 
     // Автор embed
-    public final ModConfigSpec.ConfigValue<String> embedAuthorName;
-    public final ModConfigSpec.ConfigValue<String> embedAuthorIcon;
+    public ModConfigSpec.ConfigValue<String> embedAuthorName;
+    public ModConfigSpec.ConfigValue<String> embedAuthorIcon;
 
     // Основные поля embed
-    public final ModConfigSpec.ConfigValue<String> embedTitle;
-    public final ModConfigSpec.ConfigValue<String> embedDescription;
-    public final ModConfigSpec.ConfigValue<String> embedColor;
-    public final ModConfigSpec.ConfigValue<String> embedThumbnail;
-    public final ModConfigSpec.ConfigValue<String> embedImage;
-    public final ModConfigSpec.ConfigValue<String> embedFooterIcon;
-    public final ModConfigSpec.ConfigValue<String> embedFooter;
-    public final ModConfigSpec.BooleanValue embedOnTimestamp;
+    public ModConfigSpec.ConfigValue<String> embedTitle;
+    public ModConfigSpec.ConfigValue<String> embedDescription;
+    public ModConfigSpec.ConfigValue<String> embedColor;
+    public ModConfigSpec.ConfigValue<String> embedThumbnail;
+    public ModConfigSpec.ConfigValue<String> embedImage;
+    public ModConfigSpec.ConfigValue<String> embedFooterIcon;
+    public ModConfigSpec.ConfigValue<String> embedFooter;
+    public ModConfigSpec.BooleanValue embedOnTimestamp;
 
     // Динамические поля
-    public final ModConfigSpec.ConfigValue<List<? extends String>> embedFields;
+    public  ModConfigSpec.ConfigValue<List<? extends String>> embedFields;
 
     @SuppressWarnings("deprecation")
-    public EventEntryConfig(ModConfigSpec.Builder builder, String eventName, Map<String, String> payload) {
+    public EventEntryConfig(ModConfigSpec.Builder builder, String eventName, Map<String, String> payload,Boolean embedWorking) {
         builder.comment("Configuration for " + eventName).push(eventName);
 
         // Включение события – из payload, по умолчанию true
@@ -45,13 +45,16 @@ public class EventEntryConfig {
         eventMessage = builder
                 .comment("Plain text message (supports %username% placeholder)")
                 .define("message", defaultMessage);
+        if(!embedWorking){
+            builder.pop(); // завершаем событие
+            return;
+        }
 
         // Включение embed – из payload, по умолчанию false
         boolean defaultEmbedEnable = Boolean.parseBoolean(payload.getOrDefault("embed_enable", "false"));
         embedEnable = builder
                 .comment("Send an embed message to Discord instead of plain text")
                 .define("embed_enable", defaultEmbedEnable);
-
         // --- Настройки embed (используются только если embed_enable = true) ---
         builder.comment("Embed appearance (Discord rich embed)").push("embed");
 

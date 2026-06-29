@@ -13,12 +13,6 @@ import java.util.Map;
 
 public class GeneratorEmbedMessage extends ListenerAdapter {
 
-    /**
-     * Основной метод сборки embed с произвольным набором плейсхолдеров.
-     * @param event конфиг события
-     * @param placeholders карта замен (ключ – без процентов, значение – подставляемый текст)
-     * @return готовый MessageEmbed
-     */
     public static MessageEmbed buildEmbed(EventEntryConfig event, Map<String, String> placeholders) {
         // Если карта null, используем пустую (чтобы избежать NPE)
         if (placeholders == null) {

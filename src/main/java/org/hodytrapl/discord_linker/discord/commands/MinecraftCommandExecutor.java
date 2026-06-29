@@ -8,19 +8,21 @@ import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
+import static org.hodytrapl.discord_linker.LanguageManager.getMessage;
+
 public class MinecraftCommandExecutor {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static String executeCommandWithOutput(String command) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) {
-            LOGGER.error("Сервер недоступен для команды: {}", command);
-            return "Ошибка: сервер не доступен";
+            LOGGER.error(getMessage("mod.typelogger.discord.commands.serverunavailable", command));
+            return getMessage("mod.typediscord.logger.error.serverunavailable");
         }
 
         if (command == null || command.isBlank()) {
-            LOGGER.warn("Пустая команда");
-            return "Ошибка: команда пуста";
+            LOGGER.warn(getMessage("mod.typelogger.logger.error.emptycommand"));
+            return "Error: " + getMessage("mod.typediscord.logger.error.emptycommand");
         }
 
         String normalizedCommand = command.startsWith("/") ? command : "/" + command;
@@ -70,11 +72,11 @@ public class MinecraftCommandExecutor {
         try {
             server.getCommands().performPrefixedCommand(wrappedStack, normalizedCommand);
         } catch (Exception e) {
-            LOGGER.error("Ошибка выполнения {}: {}", normalizedCommand, e.getMessage(), e);
-            return "Ошибка: " + e.getMessage();
+            LOGGER.error(getMessage("mod.typelogger.logger.error.runtime", normalizedCommand, e.getMessage()), e);
+            return getMessage("mod.typediscord.logger.error.errortext", e.getMessage());
         }
 
         String result = outputBuffer.toString();
-        return result.isEmpty() ? "Команда выполнена, но вывода нет." : result;
+        return result.isEmpty() ? getMessage("mod.typediscord.discord.command.success.emptyresult") : result;
     }
 }
