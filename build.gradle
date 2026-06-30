@@ -175,17 +175,17 @@ shadowJar {
     configurations = [project.configurations.shadow]
 
     // Перемещаем пакеты JDA и её сетевых зависимостей
-    relocate 'net.dv8tion.jda', 'org.hodytrapl.discord_linker.shadow.jda'
-    relocate 'okhttp3', 'org.hodytrapl.discord_linker.shadow.okhttp3'
-    relocate 'okio', 'org.hodytrapl.discord_linker.shadow.okio'
+    relocate 'net.dv8tion.jda', 'org.hodytrapl.discordvoxelsvoices.shadow.jda'
+    relocate 'okhttp3', 'org.hodytrapl.discordvoxelsvoices.shadow.okhttp3'
+    relocate 'okio', 'org.hodytrapl.discordvoxelsvoices.shadow.okio'
 
     // Изолируем абсолютно ВСЕ зависимости от Google (GSON, ErrorProne, Guava и др.)
-    relocate 'com.google', 'org.hodytrapl.discord_linker.shadow.google'
+    relocate 'com.google', 'org.hodytrapl.discordvoxelsvoices.shadow.google'
 
     // На всякий случай изолируем и другие утилиты, которые могут вылезти
-    relocate 'com.sun.jna', 'org.hodytrapl.discord_linker.shadow.jna'
-    relocate 'gnu.trove', 'org.hodytrapl.discord_linker.shadow.trove'
-    relocate 'com.neovisionaries', 'org.hodytrapl.discord_linker.shadow.neovisionaries'
+    relocate 'com.sun.jna', 'org.hodytrapl.discordvoxelsvoices.shadow.jna'
+    relocate 'gnu.trove', 'org.hodytrapl.discordvoxelsvoices.shadow.trove'
+    relocate 'com.neovisionaries', 'org.hodytrapl.discordvoxelsvoices.shadow.neovisionaries'
 
     // Жестко вырезаем дублирующиеся системные пакеты
     exclude 'javax/annotation/**'
